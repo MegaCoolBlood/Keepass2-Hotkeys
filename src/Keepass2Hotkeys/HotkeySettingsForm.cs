@@ -39,6 +39,7 @@ namespace Keepass2Hotkeys
             m_list.SelectedIndexChanged += OnSelectionChanged;
 
             m_hotkey = new TextBox { ReadOnly = true, Dock = DockStyle.Fill };
+            m_hotkey.PreviewKeyDown += OnHotkeyPreviewKeyDown;
             m_hotkey.KeyDown += OnHotkeyKeyDown;
             m_sequence = new TextBox { Dock = DockStyle.Fill };
 
@@ -88,13 +89,17 @@ namespace Keepass2Hotkeys
 
         public IList<HotkeyAction> Actions { get { return m_actions; } }
 
+        private void OnHotkeyPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.PrintScreen) e.IsInputKey = true;
+        }
+
         private void OnHotkeyKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Control || e.KeyCode == Keys.Alt ||
-                e.KeyCode == Keys.Shift) return;
+            if (IsModifierKey(e.KeyCode)) return;
 
             Keys modifiers = e.Modifiers & Keys.Modifiers;
-            if (modifiers == Keys.None)
+            if (modifiers == Keys.None && e.KeyCode != Keys.PrintScreen)
             {
                 m_hotkey.Text = string.Empty;
                 return;
@@ -103,6 +108,16 @@ namespace Keepass2Hotkeys
             m_hotkey.Tag = modifiers | e.KeyCode;
             m_hotkey.Text = new KeysConverter().ConvertToString(m_hotkey.Tag);
             e.SuppressKeyPress = true;
+        }
+
+        private static bool IsModifierKey(Keys key)
+        {
+            return key == Keys.Control || key == Keys.ControlKey ||
+                key == Keys.LControlKey || key == Keys.RControlKey ||
+                key == Keys.Alt || key == Keys.Menu ||
+                key == Keys.LMenu || key == Keys.RMenu ||
+                key == Keys.Shift || key == Keys.ShiftKey ||
+                key == Keys.LShiftKey || key == Keys.RShiftKey;
         }
 
         private void OnAdd(object sender, EventArgs e)
