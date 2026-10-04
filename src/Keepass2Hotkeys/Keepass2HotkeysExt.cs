@@ -66,6 +66,9 @@ namespace Keepass2Hotkeys
             DisposeHotkeys();
             foreach (HotkeyAction action in m_actions)
             {
+                if (!GlobalHotKey.IsAvailable(m_host.MainWindow, action.Hotkey))
+                    continue;
+
                 GlobalHotKey hotKey = new GlobalHotKey(m_host.MainWindow, action.Hotkey);
                 hotKey.Pressed += delegate
                 {
@@ -109,7 +112,8 @@ namespace Keepass2Hotkeys
 
         private void OnSettingsClicked(object sender, EventArgs e)
         {
-            using (HotkeySettingsForm form = new HotkeySettingsForm(m_actions))
+            using (HotkeySettingsForm form = new HotkeySettingsForm(m_actions,
+                key => GlobalHotKey.IsAvailable(m_host.MainWindow, key)))
             {
                 if (form.ShowDialog(m_host.MainWindow) != DialogResult.OK) return;
 

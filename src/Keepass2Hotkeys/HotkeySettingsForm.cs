@@ -11,9 +11,14 @@ namespace Keepass2Hotkeys
         private readonly TextBox m_hotkey;
         private readonly TextBox m_sequence;
         private readonly List<HotkeyAction> m_actions;
+        private readonly Func<Keys, bool> m_isHotkeyAvailable;
 
-        public HotkeySettingsForm(IEnumerable<HotkeyAction> actions)
+        public HotkeySettingsForm(IEnumerable<HotkeyAction> actions,
+            Func<Keys, bool> isHotkeyAvailable)
         {
+            if (isHotkeyAvailable == null) throw new ArgumentNullException("isHotkeyAvailable");
+
+            m_isHotkeyAvailable = isHotkeyAvailable;
             m_actions = new List<HotkeyAction>();
             foreach (HotkeyAction action in actions) m_actions.Add(action.Clone());
 
@@ -30,6 +35,7 @@ namespace Keepass2Hotkeys
             };
             m_list.Columns.Add("Tastenkombination", 180);
             m_list.Columns.Add("Ausdruck", 360);
+            m_list.Columns.Add("Status", 180);
             m_list.SelectedIndexChanged += OnSelectionChanged;
 
             m_hotkey = new TextBox { ReadOnly = true, Dock = DockStyle.Fill };
@@ -156,7 +162,14 @@ namespace Keepass2Hotkeys
         {
             m_list.Items.Clear();
             foreach (HotkeyAction action in m_actions)
-                m_list.Items.Add(new ListViewItem(new[] { action.DisplayHotkey, action.Sequence }));
+            {
+                string status = m_isHotkeyAvailable(action.Hotkey) ?
+                    "Verfügbar" : "Warnung: bereits belegt";
+                m_list.Items.Add(new ListViewItem(new[]
+                {
+                    action.DisplayHotkey, action.Sequence, status
+                }));
+            }
         }
     }
 }

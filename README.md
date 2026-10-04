@@ -7,6 +7,7 @@ KeePass 2.x plugin MVP that adds a global OTP Auto-Type hotkey.
 - Hotkey: `Ctrl+Alt+T`
 - Default OTP Auto-Type sequence: `{TIMEOTP}{ENTER}`
 - Additional global hotkeys and their Auto-Type expressions can be managed through `Tools > Global Hotkeys...`.
+- Hotkeys already registered by another program are shown with `Warnung: bereits belegt` and are not registered by the plugin.
 - Entry matching and the multi-match selection dialog come from KeePass' native global Auto-Type implementation.
 - The selected entry is then compiled and sent through KeePass Auto-Type, so existing OTP placeholder providers remain responsible for generating the code.
 

@@ -16,6 +16,9 @@ namespace Keepass2Hotkeys
         private const uint ModNoRepeat = 0x4000;
 
         private static int s_nextId = 0x4B32;
+        private static readonly object s_registeredLock = new object();
+        private static readonly System.Collections.Generic.HashSet<Keys> s_registeredKeys =
+            new System.Collections.Generic.HashSet<Keys>();
         private readonly int m_id = Interlocked.Increment(ref s_nextId);
         private readonly Keys m_key;
         private bool m_registered;
@@ -42,6 +45,26 @@ namespace Keepass2Hotkeys
             }
 
             m_registered = true;
+            lock (s_registeredLock) s_registeredKeys.Add(m_key);
+        }
+
+        public static bool IsAvailable(Control target, Keys key)
+        {
+            if (target == null) throw new ArgumentNullException("target");
+
+            lock (s_registeredLock)
+            {
+                if (s_registeredKeys.Contains(key)) return true;
+            }
+
+            int probeId = Interlocked.Increment(ref s_nextId);
+            uint modifiers = GetNativeModifiers(key) | ModNoRepeat;
+            if (!RegisterHotKey(target.Handle, probeId, modifiers,
+                (uint)(key & Keys.KeyCode)))
+                return false;
+
+            UnregisterHotKey(target.Handle, probeId);
+            return true;
         }
 
         private static uint GetNativeModifiers(Keys key)
@@ -63,6 +86,7 @@ namespace Keepass2Hotkeys
             {
                 UnregisterHotKey(Handle, m_id);
                 m_registered = false;
+                lock (s_registeredLock) s_registeredKeys.Remove(m_key);
             }
 
             ReleaseHandle();
