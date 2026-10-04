@@ -24,7 +24,7 @@ namespace Keepass2Hotkeys
             m_actions = new List<HotkeyAction>();
             foreach (HotkeyAction action in actions) m_actions.Add(action.Clone());
 
-            Text = "KeePass OTP Hotkeys";
+            Text = PluginStrings.Get("PluginName");
             MinimumSize = new Size(600, 360);
             StartPosition = FormStartPosition.CenterParent;
 
@@ -35,9 +35,9 @@ namespace Keepass2Hotkeys
                 FullRowSelect = true,
                 HideSelection = false
             };
-            m_list.Columns.Add("Tastenkombination", 180);
-            m_list.Columns.Add("Ausdruck", 360);
-            m_list.Columns.Add("Status", 180);
+            m_list.Columns.Add(PluginStrings.Get("Hotkey"), 180);
+            m_list.Columns.Add(PluginStrings.Get("Expression"), 360);
+            m_list.Columns.Add(PluginStrings.Get("Status"), 180);
             m_list.SelectedIndexChanged += OnSelectionChanged;
 
             m_hotkey = new TextBox { ReadOnly = true, Dock = DockStyle.Fill };
@@ -45,13 +45,13 @@ namespace Keepass2Hotkeys
             m_hotkey.KeyDown += OnHotkeyKeyDown;
             m_sequence = new AutoTypeExpressionTextBox { Dock = DockStyle.Fill };
 
-            m_addButton = new Button { Text = "Hinzufügen", AutoSize = true };
+            m_addButton = new Button { Text = PluginStrings.Get("Add"), AutoSize = true };
             m_addButton.Click += OnAdd;
-            Button remove = new Button { Text = "Entfernen", AutoSize = true };
+            Button remove = new Button { Text = PluginStrings.Get("Remove"), AutoSize = true };
             remove.Click += OnRemove;
-            Button save = new Button { Text = "Speichern und schließen", DialogResult = DialogResult.OK, AutoSize = true };
+            Button save = new Button { Text = PluginStrings.Get("SaveAndClose"), DialogResult = DialogResult.OK, AutoSize = true };
             save.Click += OnSave;
-            Button cancel = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, AutoSize = true };
+            Button cancel = new Button { Text = PluginStrings.Get("Cancel"), DialogResult = DialogResult.Cancel, AutoSize = true };
 
             TableLayoutPanel editor = new TableLayoutPanel
             {
@@ -62,9 +62,9 @@ namespace Keepass2Hotkeys
             };
             editor.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
             editor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            editor.Controls.Add(new Label { Text = "Tastenkombination:", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 0);
+            editor.Controls.Add(new Label { Text = PluginStrings.Get("Hotkey") + ":", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 0);
             editor.Controls.Add(m_hotkey, 1, 0);
-            editor.Controls.Add(new Label { Text = "Ausdruck:", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 1);
+            editor.Controls.Add(new Label { Text = PluginStrings.Get("Expression") + ":", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 1);
             editor.Controls.Add(m_sequence, 1, 1);
 
             FlowLayoutPanel buttons = new FlowLayoutPanel
@@ -145,8 +145,8 @@ namespace Keepass2Hotkeys
 
             if (!hasHotkey || !hasSequence)
             {
-                MessageBox.Show(this, "Bitte Tastenkombination und Ausdruck angeben.",
-                    "Ungültiger Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, PluginStrings.Get("EnterHotkeyAndExpression"),
+                    PluginStrings.Get("InvalidHotkey"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 
@@ -154,8 +154,8 @@ namespace Keepass2Hotkeys
             int existingIndex = FindActionIndex(hotkey);
             if (existingIndex >= 0 && existingIndex != m_editingIndex)
             {
-                MessageBox.Show(this, "Diese Tastenkombination ist bereits vorhanden.",
-                    "Doppelter Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, PluginStrings.Get("DuplicateHotkeyMessage"),
+                    PluginStrings.Get("DuplicateHotkey"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -211,8 +211,8 @@ namespace Keepass2Hotkeys
 
             if (m_actions.Count == 0)
             {
-                MessageBox.Show(this, "Mindestens ein globaler Hotkey ist erforderlich.",
-                    "Keine Hotkeys", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, PluginStrings.Get("AtLeastOneHotkey"),
+                    PluginStrings.Get("NoHotkeys"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.None;
             }
         }
@@ -223,7 +223,7 @@ namespace Keepass2Hotkeys
             foreach (HotkeyAction action in m_actions)
             {
                 string status = m_isHotkeyAvailable(action.Hotkey) ?
-                    "Verfügbar" : "Warnung: bereits belegt";
+                    PluginStrings.Get("Available") : PluginStrings.Get("Occupied");
                 m_list.Items.Add(new ListViewItem(new[]
                 {
                     action.DisplayHotkey, action.Sequence, status
@@ -243,7 +243,8 @@ namespace Keepass2Hotkeys
 
         private void UpdateAddButtonText()
         {
-            m_addButton.Text = m_editingIndex >= 0 ? "Aktualisieren" : "Hinzufügen";
+            m_addButton.Text = m_editingIndex >= 0 ?
+                PluginStrings.Get("Update") : PluginStrings.Get("Add");
         }
     }
 }

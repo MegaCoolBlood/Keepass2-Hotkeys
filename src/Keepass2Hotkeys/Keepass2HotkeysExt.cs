@@ -34,7 +34,7 @@ namespace Keepass2Hotkeys
                 DisposeHotkeys();
                 MessageBox.Show(host.MainWindow,
                     ex.Message,
-                    "KeePass OTP Hotkeys",
+                    PluginStrings.Get("PluginName"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return false;
@@ -56,7 +56,8 @@ namespace Keepass2Hotkeys
         {
             if (t != PluginMenuType.Main) return null;
 
-            ToolStripMenuItem item = new ToolStripMenuItem("Global Hotkeys...");
+            ToolStripMenuItem item = new ToolStripMenuItem(
+                PluginStrings.Get("GlobalHotkeys"));
             item.Click += OnSettingsClicked;
             return item;
         }
@@ -129,7 +130,8 @@ namespace Keepass2Hotkeys
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(m_host.MainWindow, ex.Message, "KeePass OTP Hotkeys",
+                    MessageBox.Show(m_host.MainWindow, ex.Message,
+                        PluginStrings.Get("PluginName"),
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

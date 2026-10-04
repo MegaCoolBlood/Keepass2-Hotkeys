@@ -13,11 +13,11 @@ namespace Keepass2Hotkeys
         private sealed class Completion
         {
             public string Token;
-            public string Description;
+            public string DescriptionKey;
 
             public override string ToString()
             {
-                return Token + "    " + Description;
+                return Token + "    " + PluginStrings.Get(DescriptionKey);
             }
         }
 
@@ -58,20 +58,20 @@ namespace Keepass2Hotkeys
 
         private static readonly Completion[] s_builtInCompletions =
         {
-            new Completion { Token = "{USERNAME}", Description = "Benutzername des Eintrags" },
-            new Completion { Token = "{PASSWORD}", Description = "Passwort des Eintrags" },
-            new Completion { Token = "{TIMEOTP}", Description = "Aktueller TOTP-Wert" },
-            new Completion { Token = "{HMACOTP}", Description = "Aktueller HOTP-Wert" },
-            new Completion { Token = "{TITLE}", Description = "Titel des Eintrags" },
-            new Completion { Token = "{URL}", Description = "URL des Eintrags" },
-            new Completion { Token = "{NOTES}", Description = "Notizen des Eintrags" },
-            new Completion { Token = "{ENTER}", Description = "Enter-Taste senden" },
-            new Completion { Token = "{TAB}", Description = "Tab-Taste senden" },
-            new Completion { Token = "{SPACE}", Description = "Leerzeichen senden" },
-            new Completion { Token = "{DELAY 100}", Description = "Verzögerung in Millisekunden" },
-            new Completion { Token = "{CLEARFIELD}", Description = "Eingabefeld leeren" },
-            new Completion { Token = "{HOME}", Description = "Home-Taste senden" },
-            new Completion { Token = "{END}", Description = "End-Taste senden" }
+            new Completion { Token = "{USERNAME}", DescriptionKey = "Username" },
+            new Completion { Token = "{PASSWORD}", DescriptionKey = "Password" },
+            new Completion { Token = "{TIMEOTP}", DescriptionKey = "TimeOtp" },
+            new Completion { Token = "{HMACOTP}", DescriptionKey = "HmacOtp" },
+            new Completion { Token = "{TITLE}", DescriptionKey = "Title" },
+            new Completion { Token = "{URL}", DescriptionKey = "Url" },
+            new Completion { Token = "{NOTES}", DescriptionKey = "Notes" },
+            new Completion { Token = "{ENTER}", DescriptionKey = "Enter" },
+            new Completion { Token = "{TAB}", DescriptionKey = "Tab" },
+            new Completion { Token = "{SPACE}", DescriptionKey = "Space" },
+            new Completion { Token = "{DELAY 100}", DescriptionKey = "Delay" },
+            new Completion { Token = "{CLEARFIELD}", DescriptionKey = "ClearField" },
+            new Completion { Token = "{HOME}", DescriptionKey = "Home" },
+            new Completion { Token = "{END}", DescriptionKey = "End" }
         };
 
         private CompletionPopup m_popup;
@@ -342,7 +342,7 @@ namespace Keepass2Hotkeys
                 completions.Add(new Completion
                 {
                     Token = placeholder,
-                    Description = "Von einem KeePass-Plugin bereitgestellt"
+                    DescriptionKey = "PluginProvided"
                 });
             }
 

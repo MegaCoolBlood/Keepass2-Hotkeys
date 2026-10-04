@@ -41,7 +41,7 @@ namespace Keepass2Hotkeys
             if (!RegisterHotKey(Handle, m_id, modifiers, (uint)(m_key & Keys.KeyCode)))
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error(),
-                    "The OTP hotkey is already registered or cannot be registered.");
+                    PluginStrings.Get("HotkeyRegistrationFailed"));
             }
 
             m_registered = true;
