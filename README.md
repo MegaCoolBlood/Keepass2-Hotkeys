@@ -22,3 +22,18 @@ msbuild Keepass2Hotkeys.sln /p:Configuration=Release /p:KeePassDir="C:\Program F
 Copy `src\Keepass2Hotkeys\bin\Release\Keepass2Hotkeys.dll` to KeePass' `Plugins` directory.
 
 The plugin currently uses the public `AutoType.PerformGlobal` entry point and its public compile filter event. This preserves KeePass' global matching and selection behavior while replacing the selected entry's sequence with the OTP sequence at compile time.
+
+## Test
+
+Build and run the dependency-free test executable with the same KeePass installation:
+
+```powershell
+msbuild tests\Keepass2Hotkeys.Tests\Keepass2Hotkeys.Tests.csproj `
+  /t:Rebuild `
+  /p:Configuration=Release `
+  /p:KeePassDir="C:\Program Files\KeePass Password Safe 2"
+
+tests\Keepass2Hotkeys.Tests\bin\Release\Keepass2Hotkeys.Tests.exe
+```
+
+The test verifies that normal Auto-Type sequences are preserved and that the OTP sequence is applied only while the OTP action is active.

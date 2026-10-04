@@ -9,12 +9,11 @@ namespace Keepass2Hotkeys
 {
     public sealed class Keepass2HotkeysExt : Plugin
     {
-        private const string OtpSequence = "{TIMEOTP}";
         private const Keys OtpHotKey = Keys.Control | Keys.Alt | Keys.Shift | Keys.O;
 
         private IPluginHost m_host;
         private GlobalHotKey m_hotKey;
-        private bool m_otpAutoTypeInProgress;
+        private readonly OtpSequenceOverride m_otpSequence = new OtpSequenceOverride();
 
         public override bool Initialize(IPluginHost host)
         {
@@ -79,20 +78,20 @@ namespace Keepass2Hotkeys
                 m_host.MainWindow.DocumentManager.GetOpenDatabases();
             if (databases == null || databases.Count == 0) return;
 
-            m_otpAutoTypeInProgress = true;
+            m_otpSequence.Enabled = true;
             try
             {
                 AutoType.PerformGlobal(databases, m_host.MainWindow.ClientIcons);
             }
             finally
             {
-                m_otpAutoTypeInProgress = false;
+                m_otpSequence.Enabled = false;
             }
         }
 
         private void OnFilterCompilePre(object sender, AutoTypeEventArgs e)
         {
-            if (m_otpAutoTypeInProgress) e.Sequence = OtpSequence;
+            m_otpSequence.Apply(e);
         }
     }
 }
