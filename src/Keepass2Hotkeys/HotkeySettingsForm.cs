@@ -12,6 +12,8 @@ namespace Keepass2Hotkeys
         private readonly TextBox m_sequence;
         private readonly List<HotkeyAction> m_actions;
         private readonly Func<Keys, bool> m_isHotkeyAvailable;
+        private readonly Button m_addButton;
+        private int m_editingIndex = -1;
 
         public HotkeySettingsForm(IEnumerable<HotkeyAction> actions,
             Func<Keys, bool> isHotkeyAvailable)
@@ -43,11 +45,11 @@ namespace Keepass2Hotkeys
             m_hotkey.KeyDown += OnHotkeyKeyDown;
             m_sequence = new TextBox { Dock = DockStyle.Fill };
 
-            Button add = new Button { Text = "Hinzufügen", AutoSize = true };
-            add.Click += OnAdd;
+            m_addButton = new Button { Text = "Hinzufügen", AutoSize = true };
+            m_addButton.Click += OnAdd;
             Button remove = new Button { Text = "Entfernen", AutoSize = true };
             remove.Click += OnRemove;
-            Button save = new Button { Text = "Speichern", DialogResult = DialogResult.OK, AutoSize = true };
+            Button save = new Button { Text = "Speichern und schließen", DialogResult = DialogResult.OK, AutoSize = true };
             save.Click += OnSave;
             Button cancel = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, AutoSize = true };
 
@@ -72,7 +74,7 @@ namespace Keepass2Hotkeys
                 FlowDirection = FlowDirection.LeftToRight,
                 Padding = new Padding(8)
             };
-            buttons.Controls.Add(add);
+            buttons.Controls.Add(m_addButton);
             buttons.Controls.Add(remove);
             buttons.Controls.Add(new Label { Width = 170 });
             buttons.Controls.Add(save);
@@ -107,6 +109,8 @@ namespace Keepass2Hotkeys
 
             m_hotkey.Tag = modifiers | e.KeyCode;
             m_hotkey.Text = new KeysConverter().ConvertToString(m_hotkey.Tag);
+            m_editingIndex = FindActionIndex((Keys)m_hotkey.Tag);
+            UpdateAddButtonText();
             e.SuppressKeyPress = true;
         }
 
@@ -127,6 +131,8 @@ namespace Keepass2Hotkeys
                 m_hotkey.Tag = null;
                 m_hotkey.Text = string.Empty;
                 m_sequence.Clear();
+                m_editingIndex = -1;
+                UpdateAddButtonText();
                 RefreshList();
             }
         }
@@ -145,17 +151,23 @@ namespace Keepass2Hotkeys
             }
 
             Keys hotkey = (Keys)m_hotkey.Tag;
-            foreach (HotkeyAction action in m_actions)
+            int existingIndex = FindActionIndex(hotkey);
+            if (existingIndex >= 0 && existingIndex != m_editingIndex)
             {
-                if (action.Hotkey == hotkey)
-                {
-                    MessageBox.Show(this, "Diese Tastenkombination ist bereits vorhanden.",
-                        "Doppelter Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return false;
-                }
+                MessageBox.Show(this, "Diese Tastenkombination ist bereits vorhanden.",
+                    "Doppelter Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
             }
 
-            m_actions.Add(new HotkeyAction { Hotkey = hotkey, Sequence = m_sequence.Text });
+            HotkeyAction updatedAction = new HotkeyAction
+            {
+                Hotkey = hotkey,
+                Sequence = m_sequence.Text
+            };
+            if (m_editingIndex >= 0)
+                m_actions[m_editingIndex] = updatedAction;
+            else
+                m_actions.Add(updatedAction);
             return true;
         }
 
@@ -163,6 +175,11 @@ namespace Keepass2Hotkeys
         {
             if (m_list.SelectedIndices.Count != 1) return;
             m_actions.RemoveAt(m_list.SelectedIndices[0]);
+            m_editingIndex = -1;
+            m_hotkey.Tag = null;
+            m_hotkey.Text = string.Empty;
+            m_sequence.Clear();
+            UpdateAddButtonText();
             RefreshList();
         }
 
@@ -170,9 +187,11 @@ namespace Keepass2Hotkeys
         {
             if (m_list.SelectedIndices.Count != 1) return;
             HotkeyAction action = m_actions[m_list.SelectedIndices[0]];
+            m_editingIndex = m_list.SelectedIndices[0];
             m_hotkey.Tag = action.Hotkey;
             m_hotkey.Text = action.DisplayHotkey;
             m_sequence.Text = action.Sequence;
+            UpdateAddButtonText();
         }
 
         private void OnSave(object sender, EventArgs e)
@@ -186,6 +205,8 @@ namespace Keepass2Hotkeys
             m_hotkey.Tag = null;
             m_hotkey.Text = string.Empty;
             m_sequence.Clear();
+            m_editingIndex = -1;
+            UpdateAddButtonText();
             RefreshList();
 
             if (m_actions.Count == 0)
@@ -208,6 +229,21 @@ namespace Keepass2Hotkeys
                     action.DisplayHotkey, action.Sequence, status
                 }));
             }
+        }
+
+        private int FindActionIndex(Keys hotkey)
+        {
+            for (int i = 0; i < m_actions.Count; i++)
+            {
+                if (m_actions[i].Hotkey == hotkey) return i;
+            }
+
+            return -1;
+        }
+
+        private void UpdateAddButtonText()
+        {
+            m_addButton.Text = m_editingIndex >= 0 ? "Aktualisieren" : "Hinzufügen";
         }
     }
 }
