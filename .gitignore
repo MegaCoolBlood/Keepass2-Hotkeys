@@ -1,0 +1,29 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Test and analysis output
+TestResults/
+BenchmarkDotNet.Artifacts/
+coverage/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Visual Studio Code
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+

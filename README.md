@@ -1,0 +1,24 @@
+# KeePass OTP Hotkeys
+
+KeePass 2.x plugin MVP that adds a global OTP Auto-Type hotkey.
+
+## Current behavior
+
+- Hotkey: `Ctrl+Alt+Shift+O`
+- OTP Auto-Type sequence: `{TIMEOTP}`
+- Entry matching and the multi-match selection dialog come from KeePass' native global Auto-Type implementation.
+- The selected entry is then compiled and sent through KeePass Auto-Type, so existing OTP placeholder providers remain responsible for generating the code.
+
+The `{TIMEOTP}` placeholder must be provided by the OTP plugin or Auto-Type integration installed by the user. The sequence will become configurable in a later version.
+
+## Build
+
+The plugin targets .NET Framework 4.8 and references the KeePass executable of the intended KeePass installation. Install the .NET Framework 4.8 developer pack and Visual Studio or MSBuild, then run:
+
+```powershell
+msbuild Keepass2Hotkeys.sln /p:Configuration=Release /p:KeePassDir="C:\Program Files\KeePass Password Safe 2"
+```
+
+Copy `src\Keepass2Hotkeys\bin\Release\Keepass2Hotkeys.dll` to KeePass' `Plugins` directory.
+
+The plugin currently uses the public `AutoType.PerformGlobal` entry point and its public compile filter event. This preserves KeePass' global matching and selection behavior while replacing the selected entry's sequence with the OTP sequence at compile time.
