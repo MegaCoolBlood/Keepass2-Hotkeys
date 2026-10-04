@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Keepass2Hotkeys
@@ -14,7 +15,8 @@ namespace Keepass2Hotkeys
         private const uint ModWin = 0x0008;
         private const uint ModNoRepeat = 0x4000;
 
-        private const int HotKeyId = 0x4B32;
+        private static int s_nextId = 0x4B32;
+        private readonly int m_id = Interlocked.Increment(ref s_nextId);
         private readonly Keys m_key;
         private bool m_registered;
 
@@ -33,7 +35,7 @@ namespace Keepass2Hotkeys
             if (m_registered) return;
 
             uint modifiers = GetNativeModifiers(m_key) | ModNoRepeat;
-            if (!RegisterHotKey(Handle, HotKeyId, modifiers, (uint)(m_key & Keys.KeyCode)))
+            if (!RegisterHotKey(Handle, m_id, modifiers, (uint)(m_key & Keys.KeyCode)))
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error(),
                     "The OTP hotkey is already registered or cannot be registered.");
@@ -59,7 +61,7 @@ namespace Keepass2Hotkeys
         {
             if (m_registered)
             {
-                UnregisterHotKey(Handle, HotKeyId);
+                UnregisterHotKey(Handle, m_id);
                 m_registered = false;
             }
 
@@ -69,7 +71,7 @@ namespace Keepass2Hotkeys
         protected override void WndProc(ref Message message)
         {
             if ((message.Msg == WmHotKey) &&
-                (message.WParam.ToInt32() == HotKeyId))
+                (message.WParam.ToInt32() == m_id))
             {
                 EventHandler handler = Pressed;
                 if (handler != null) handler(this, EventArgs.Empty);

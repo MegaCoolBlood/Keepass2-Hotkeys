@@ -33,6 +33,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalHotKey.cs" />
+    <Compile Include="HotkeyAction.cs" />
+    <Compile Include="HotkeySettings.cs" />
+    <Compile Include="HotkeySettingsForm.cs" />
     <Compile Include="Keepass2HotkeysExt.cs" />
     <Compile Include="OtpSequenceOverride.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

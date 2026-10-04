@@ -1,0 +1,162 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace Keepass2Hotkeys
+{
+    internal sealed class HotkeySettingsForm : Form
+    {
+        private readonly ListView m_list;
+        private readonly TextBox m_hotkey;
+        private readonly TextBox m_sequence;
+        private readonly List<HotkeyAction> m_actions;
+
+        public HotkeySettingsForm(IEnumerable<HotkeyAction> actions)
+        {
+            m_actions = new List<HotkeyAction>();
+            foreach (HotkeyAction action in actions) m_actions.Add(action.Clone());
+
+            Text = "KeePass OTP Hotkeys";
+            MinimumSize = new Size(600, 360);
+            StartPosition = FormStartPosition.CenterParent;
+
+            m_list = new ListView
+            {
+                Dock = DockStyle.Fill,
+                View = View.Details,
+                FullRowSelect = true,
+                HideSelection = false
+            };
+            m_list.Columns.Add("Tastenkombination", 180);
+            m_list.Columns.Add("Ausdruck", 360);
+            m_list.SelectedIndexChanged += OnSelectionChanged;
+
+            m_hotkey = new TextBox { ReadOnly = true, Dock = DockStyle.Fill };
+            m_hotkey.KeyDown += OnHotkeyKeyDown;
+            m_sequence = new TextBox { Dock = DockStyle.Fill };
+
+            Button add = new Button { Text = "Hinzufügen", AutoSize = true };
+            add.Click += OnAdd;
+            Button remove = new Button { Text = "Entfernen", AutoSize = true };
+            remove.Click += OnRemove;
+            Button save = new Button { Text = "Speichern", DialogResult = DialogResult.OK, AutoSize = true };
+            save.Click += OnSave;
+            Button cancel = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, AutoSize = true };
+
+            TableLayoutPanel editor = new TableLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 92,
+                ColumnCount = 2,
+                Padding = new Padding(8)
+            };
+            editor.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
+            editor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            editor.Controls.Add(new Label { Text = "Tastenkombination:", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 0);
+            editor.Controls.Add(m_hotkey, 1, 0);
+            editor.Controls.Add(new Label { Text = "Ausdruck:", Anchor = AnchorStyles.Left, AutoSize = true }, 0, 1);
+            editor.Controls.Add(m_sequence, 1, 1);
+
+            FlowLayoutPanel buttons = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 42,
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Padding(8)
+            };
+            buttons.Controls.Add(add);
+            buttons.Controls.Add(remove);
+            buttons.Controls.Add(new Label { Width = 170 });
+            buttons.Controls.Add(save);
+            buttons.Controls.Add(cancel);
+
+            Controls.Add(m_list);
+            Controls.Add(editor);
+            Controls.Add(buttons);
+            AcceptButton = save;
+            CancelButton = cancel;
+
+            RefreshList();
+        }
+
+        public IList<HotkeyAction> Actions { get { return m_actions; } }
+
+        private void OnHotkeyKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Control || e.KeyCode == Keys.Alt ||
+                e.KeyCode == Keys.Shift) return;
+
+            Keys modifiers = e.Modifiers & Keys.Modifiers;
+            if (modifiers == Keys.None)
+            {
+                m_hotkey.Text = string.Empty;
+                return;
+            }
+
+            m_hotkey.Tag = modifiers | e.KeyCode;
+            m_hotkey.Text = new KeysConverter().ConvertToString(m_hotkey.Tag);
+            e.SuppressKeyPress = true;
+        }
+
+        private void OnAdd(object sender, EventArgs e)
+        {
+            if (m_hotkey.Tag == null || string.IsNullOrWhiteSpace(m_sequence.Text))
+            {
+                MessageBox.Show(this, "Bitte Tastenkombination und Ausdruck angeben.",
+                    "Ungültiger Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            Keys hotkey = (Keys)m_hotkey.Tag;
+            foreach (HotkeyAction action in m_actions)
+            {
+                if (action.Hotkey == hotkey)
+                {
+                    MessageBox.Show(this, "Diese Tastenkombination ist bereits vorhanden.",
+                        "Doppelter Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            m_actions.Add(new HotkeyAction { Hotkey = hotkey, Sequence = m_sequence.Text });
+            m_hotkey.Tag = null;
+            m_hotkey.Text = string.Empty;
+            m_sequence.Clear();
+            RefreshList();
+        }
+
+        private void OnRemove(object sender, EventArgs e)
+        {
+            if (m_list.SelectedIndices.Count != 1) return;
+            m_actions.RemoveAt(m_list.SelectedIndices[0]);
+            RefreshList();
+        }
+
+        private void OnSelectionChanged(object sender, EventArgs e)
+        {
+            if (m_list.SelectedIndices.Count != 1) return;
+            HotkeyAction action = m_actions[m_list.SelectedIndices[0]];
+            m_hotkey.Tag = action.Hotkey;
+            m_hotkey.Text = action.DisplayHotkey;
+            m_sequence.Text = action.Sequence;
+        }
+
+        private void OnSave(object sender, EventArgs e)
+        {
+            if (m_actions.Count == 0)
+            {
+                MessageBox.Show(this, "Mindestens ein globaler Hotkey ist erforderlich.",
+                    "Keine Hotkeys", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DialogResult = DialogResult.None;
+            }
+        }
+
+        private void RefreshList()
+        {
+            m_list.Items.Clear();
+            foreach (HotkeyAction action in m_actions)
+                m_list.Items.Add(new ListViewItem(new[] { action.DisplayHotkey, action.Sequence }));
+        }
+    }
+}

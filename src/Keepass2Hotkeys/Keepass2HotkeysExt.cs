@@ -9,10 +9,9 @@ namespace Keepass2Hotkeys
 {
     public sealed class Keepass2HotkeysExt : Plugin
     {
-        private const Keys OtpHotKey = Keys.Control | Keys.Alt | Keys.T;
-
         private IPluginHost m_host;
-        private GlobalHotKey m_hotKey;
+        private readonly List<GlobalHotKey> m_hotKeys = new List<GlobalHotKey>();
+        private List<HotkeyAction> m_actions;
         private readonly OtpSequenceOverride m_otpSequence = new OtpSequenceOverride();
 
         public override bool Initialize(IPluginHost host)
@@ -21,20 +20,18 @@ namespace Keepass2Hotkeys
             if (host.MainWindow == null) return false;
 
             m_host = host;
+            m_actions = HotkeySettings.Load(host.CustomConfig);
             AutoType.FilterCompilePre += OnFilterCompilePre;
 
             try
             {
-                m_hotKey = new GlobalHotKey(host.MainWindow, OtpHotKey);
-                m_hotKey.Pressed += OnHotKeyPressed;
-                m_hotKey.Register();
+                RegisterHotkeys();
             }
             catch (Exception ex) when (ex is System.ComponentModel.Win32Exception ||
                                        ex is InvalidOperationException)
             {
                 AutoType.FilterCompilePre -= OnFilterCompilePre;
-                if (m_hotKey != null) m_hotKey.Dispose();
-                m_hotKey = null;
+                DisposeHotkeys();
                 MessageBox.Show(host.MainWindow,
                     ex.Message,
                     "KeePass OTP Hotkeys",
@@ -50,12 +47,7 @@ namespace Keepass2Hotkeys
         {
             AutoType.FilterCompilePre -= OnFilterCompilePre;
 
-            if (m_hotKey != null)
-            {
-                m_hotKey.Pressed -= OnHotKeyPressed;
-                m_hotKey.Dispose();
-                m_hotKey = null;
-            }
+            DisposeHotkeys();
 
             m_host = null;
         }
@@ -64,13 +56,33 @@ namespace Keepass2Hotkeys
         {
             if (t != PluginMenuType.Main) return null;
 
-            ToolStripMenuItem item = new ToolStripMenuItem(
-                "Global OTP Auto-Type (Ctrl+Alt+T)");
-            item.Click += OnHotKeyPressed;
+            ToolStripMenuItem item = new ToolStripMenuItem("Global Hotkeys...");
+            item.Click += OnSettingsClicked;
             return item;
         }
 
-        private void OnHotKeyPressed(object sender, EventArgs e)
+        private void RegisterHotkeys()
+        {
+            DisposeHotkeys();
+            foreach (HotkeyAction action in m_actions)
+            {
+                GlobalHotKey hotKey = new GlobalHotKey(m_host.MainWindow, action.Hotkey);
+                hotKey.Pressed += delegate
+                {
+                    ExecuteHotkey(action);
+                };
+                hotKey.Register();
+                m_hotKeys.Add(hotKey);
+            }
+        }
+
+        private void DisposeHotkeys()
+        {
+            foreach (GlobalHotKey hotKey in m_hotKeys) hotKey.Dispose();
+            m_hotKeys.Clear();
+        }
+
+        private void ExecuteHotkey(HotkeyAction action)
         {
             if (m_host == null || m_host.MainWindow == null) return;
 
@@ -79,6 +91,7 @@ namespace Keepass2Hotkeys
             if (databases == null || databases.Count == 0) return;
 
             m_otpSequence.Enabled = true;
+            m_otpSequence.Sequence = action.Sequence;
             try
             {
                 AutoType.PerformGlobal(databases, m_host.MainWindow.ClientIcons);
@@ -92,6 +105,30 @@ namespace Keepass2Hotkeys
         private void OnFilterCompilePre(object sender, AutoTypeEventArgs e)
         {
             m_otpSequence.Apply(e);
+        }
+
+        private void OnSettingsClicked(object sender, EventArgs e)
+        {
+            using (HotkeySettingsForm form = new HotkeySettingsForm(m_actions))
+            {
+                if (form.ShowDialog(m_host.MainWindow) != DialogResult.OK) return;
+
+                List<HotkeyAction> updated = new List<HotkeyAction>();
+                foreach (HotkeyAction action in form.Actions)
+                    updated.Add(action.Clone());
+
+                try
+                {
+                    HotkeySettings.Save(m_host.CustomConfig, updated);
+                    m_actions = updated;
+                    RegisterHotkeys();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(m_host.MainWindow, ex.Message, "KeePass OTP Hotkeys",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
