@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalHotKey.cs" />
+    <Compile Include="AutoTypeExpressionTextBox.cs" />
     <Compile Include="HotkeyAction.cs" />
     <Compile Include="HotkeySettings.cs" />
     <Compile Include="HotkeySettingsForm.cs" />

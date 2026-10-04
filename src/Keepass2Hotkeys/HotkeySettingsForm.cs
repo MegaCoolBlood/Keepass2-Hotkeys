@@ -9,7 +9,7 @@ namespace Keepass2Hotkeys
     {
         private readonly ListView m_list;
         private readonly TextBox m_hotkey;
-        private readonly TextBox m_sequence;
+        private readonly AutoTypeExpressionTextBox m_sequence;
         private readonly List<HotkeyAction> m_actions;
         private readonly Func<Keys, bool> m_isHotkeyAvailable;
         private readonly Button m_addButton;
@@ -43,7 +43,7 @@ namespace Keepass2Hotkeys
             m_hotkey = new TextBox { ReadOnly = true, Dock = DockStyle.Fill };
             m_hotkey.PreviewKeyDown += OnHotkeyPreviewKeyDown;
             m_hotkey.KeyDown += OnHotkeyKeyDown;
-            m_sequence = new TextBox { Dock = DockStyle.Fill };
+            m_sequence = new AutoTypeExpressionTextBox { Dock = DockStyle.Fill };
 
             m_addButton = new Button { Text = "Hinzufügen", AutoSize = true };
             m_addButton.Click += OnAdd;
