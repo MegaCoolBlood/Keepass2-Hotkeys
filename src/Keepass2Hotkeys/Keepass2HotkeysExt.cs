@@ -9,7 +9,7 @@ namespace Keepass2Hotkeys
 {
     public sealed class Keepass2HotkeysExt : Plugin
     {
-        private const Keys OtpHotKey = Keys.Control | Keys.Alt | Keys.Shift | Keys.O;
+        private const Keys OtpHotKey = Keys.Control | Keys.Alt | Keys.T;
 
         private IPluginHost m_host;
         private GlobalHotKey m_hotKey;
@@ -65,7 +65,7 @@ namespace Keepass2Hotkeys
             if (t != PluginMenuType.Main) return null;
 
             ToolStripMenuItem item = new ToolStripMenuItem(
-                "Global OTP Auto-Type (Ctrl+Alt+Shift+O)");
+                "Global OTP Auto-Type (Ctrl+Alt+T)");
             item.Click += OnHotKeyPressed;
             return item;
         }

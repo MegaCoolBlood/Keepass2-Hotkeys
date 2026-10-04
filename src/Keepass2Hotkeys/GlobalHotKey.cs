@@ -11,6 +11,7 @@ namespace Keepass2Hotkeys
         private const uint ModAlt = 0x0001;
         private const uint ModControl = 0x0002;
         private const uint ModShift = 0x0004;
+        private const uint ModWin = 0x0008;
         private const uint ModNoRepeat = 0x4000;
 
         private const int HotKeyId = 0x4B32;
@@ -31,7 +32,7 @@ namespace Keepass2Hotkeys
         {
             if (m_registered) return;
 
-            uint modifiers = ModControl | ModAlt | ModShift | ModNoRepeat;
+            uint modifiers = GetNativeModifiers(m_key) | ModNoRepeat;
             if (!RegisterHotKey(Handle, HotKeyId, modifiers, (uint)(m_key & Keys.KeyCode)))
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error(),
@@ -39,6 +40,19 @@ namespace Keepass2Hotkeys
             }
 
             m_registered = true;
+        }
+
+        private static uint GetNativeModifiers(Keys key)
+        {
+            Keys modifiers = key & Keys.Modifiers;
+            uint nativeModifiers = 0;
+
+            if ((modifiers & Keys.Alt) != Keys.None) nativeModifiers |= ModAlt;
+            if ((modifiers & Keys.Control) != Keys.None) nativeModifiers |= ModControl;
+            if ((modifiers & Keys.Shift) != Keys.None) nativeModifiers |= ModShift;
+            if ((modifiers & Keys.LWin) != Keys.None) nativeModifiers |= ModWin;
+
+            return nativeModifiers;
         }
 
         public void Dispose()
