@@ -122,11 +122,26 @@ namespace Keepass2Hotkeys
 
         private void OnAdd(object sender, EventArgs e)
         {
-            if (m_hotkey.Tag == null || string.IsNullOrWhiteSpace(m_sequence.Text))
+            if (TryAddCurrentAction())
+            {
+                m_hotkey.Tag = null;
+                m_hotkey.Text = string.Empty;
+                m_sequence.Clear();
+                RefreshList();
+            }
+        }
+
+        private bool TryAddCurrentAction()
+        {
+            bool hasHotkey = m_hotkey.Tag != null;
+            bool hasSequence = !string.IsNullOrWhiteSpace(m_sequence.Text);
+            if (!hasHotkey && !hasSequence) return true;
+
+            if (!hasHotkey || !hasSequence)
             {
                 MessageBox.Show(this, "Bitte Tastenkombination und Ausdruck angeben.",
                     "Ungültiger Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
+                return false;
             }
 
             Keys hotkey = (Keys)m_hotkey.Tag;
@@ -136,15 +151,12 @@ namespace Keepass2Hotkeys
                 {
                     MessageBox.Show(this, "Diese Tastenkombination ist bereits vorhanden.",
                         "Doppelter Hotkey", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    return false;
                 }
             }
 
             m_actions.Add(new HotkeyAction { Hotkey = hotkey, Sequence = m_sequence.Text });
-            m_hotkey.Tag = null;
-            m_hotkey.Text = string.Empty;
-            m_sequence.Clear();
-            RefreshList();
+            return true;
         }
 
         private void OnRemove(object sender, EventArgs e)
@@ -165,6 +177,17 @@ namespace Keepass2Hotkeys
 
         private void OnSave(object sender, EventArgs e)
         {
+            if (!TryAddCurrentAction())
+            {
+                DialogResult = DialogResult.None;
+                return;
+            }
+
+            m_hotkey.Tag = null;
+            m_hotkey.Text = string.Empty;
+            m_sequence.Clear();
+            RefreshList();
+
             if (m_actions.Count == 0)
             {
                 MessageBox.Show(this, "Mindestens ein globaler Hotkey ist erforderlich.",
