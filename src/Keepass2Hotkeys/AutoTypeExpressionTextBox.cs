@@ -145,6 +145,13 @@ namespace Keepass2Hotkeys
 
         protected override bool ProcessCmdKey(ref Message message, Keys keyData)
         {
+            if ((keyData & Keys.KeyCode) == Keys.Back &&
+                (keyData & Keys.Control) == Keys.Control)
+            {
+                DeletePreviousWord();
+                return true;
+            }
+
             if (m_popup.Visible)
             {
                 Keys key = keyData & Keys.KeyCode;
@@ -162,6 +169,37 @@ namespace Keepass2Hotkeys
             }
 
             return base.ProcessCmdKey(ref message, keyData);
+        }
+
+        private void DeletePreviousWord()
+        {
+            if (SelectionLength > 0)
+            {
+                SelectedText = string.Empty;
+                return;
+            }
+
+            int end = SelectionStart;
+            if (end == 0) return;
+
+            int start = end;
+            while (start > 0 && char.IsWhiteSpace(Text[start - 1])) start--;
+
+            if (start > 0 && Text[start - 1] == '}')
+            {
+                int expressionStart = Text.LastIndexOf('{', start - 1);
+                if (expressionStart >= 0)
+                {
+                    Select(expressionStart, end - expressionStart);
+                    SelectedText = string.Empty;
+                    return;
+                }
+            }
+
+            while (start > 0 && !char.IsWhiteSpace(Text[start - 1])) start--;
+
+            Select(start, end - start);
+            SelectedText = string.Empty;
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
