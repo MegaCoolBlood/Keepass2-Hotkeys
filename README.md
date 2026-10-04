@@ -1,24 +1,24 @@
-# KeePass OTP Hotkeys
+# KeePass2Hotkeys
 
-KeePass 2.x plugin for configurable global Auto-Type hotkeys.
+KeePass 2.x plugin for configurable global Auto-Type hotkeys, authored by S!rLychee.
 
 ## Current behavior
 
 - Hotkey: `Ctrl+Alt+T`
-- Default OTP Auto-Type sequence: `{TIMEOTP}{ENTER}`
+- Default Auto-Type sequence: `{TIMEOTP}{ENTER}` (TOTP is supported by compatible OTP integrations).
 - Additional global hotkeys and their Auto-Type expressions can be managed through `Tools > Global Hotkeys...`.
 - Hotkeys already registered by another program are shown with `Warnung: bereits belegt` and are not registered by the plugin.
 - The expression field provides IDE-style completion: type `{` to filter KeePass placeholders, use `Up`/`Down` to select, `Enter`/`Tab` to insert, `Esc` to close, or `Ctrl+Space` to show all suggestions.
 - Entry matching and the multi-match selection dialog come from KeePass' native global Auto-Type implementation.
 - The selected entry is then compiled and sent through KeePass Auto-Type, so existing OTP placeholder providers remain responsible for generating the code.
 
-The `{TIMEOTP}` placeholder must be provided by the OTP plugin or Auto-Type integration installed by the user. Each configured expression is passed to KeePass Auto-Type unchanged.
+Each configured expression is passed to KeePass Auto-Type unchanged. The default `{TIMEOTP}` placeholder requires a compatible OTP plugin or integration.
 
 ## Requirements
 
 - KeePass 2.x on Windows
 - .NET Framework 4.8
-- An OTP plugin or integration that provides `{TIMEOTP}` for OTP Auto-Type
+- A KeePass installation with the Auto-Type functionality required by your configured expressions
 
 ## Installation
 
@@ -29,7 +29,7 @@ The `{TIMEOTP}` placeholder must be provided by the OTP plugin or Auto-Type inte
 5. Start KeePass and verify the plugin under `Tools > Plugins`.
 6. Configure hotkeys under `Tools > Global Hotkeys...`.
 
-The plugin does not include an OTP provider. If `{TIMEOTP}` is unavailable in the installed KeePass setup, configure an expression supported by your OTP integration.
+The plugin does not include an OTP provider. If `{TIMEOTP}` is unavailable, configure an expression supported by your installed KeePass integrations.
 
 ## Build
 

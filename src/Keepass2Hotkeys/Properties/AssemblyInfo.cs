@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("KeePass OTP Hotkeys")]
-[assembly: AssemblyDescription("Adds a global hotkey for OTP Auto-Type using KeePass' native matching and selection logic.")]
+[assembly: AssemblyTitle("KeePass2Hotkeys")]
+[assembly: AssemblyDescription("Adds configurable global hotkeys for KeePass Auto-Type.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("S!rLychee")]
 [assembly: AssemblyProduct("KeePass Plugin")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("Copyright (C) 2026 S!rLychee")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("5F1E86DC-4F3D-49DE-9E9C-4C4A3B48F8B7")]

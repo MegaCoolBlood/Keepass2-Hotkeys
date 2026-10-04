@@ -17,7 +17,7 @@ namespace Keepass2Hotkeys
         {
             switch (key)
             {
-                case "PluginName": return "KeePass OTP Hotkeys";
+                case "PluginName": return "KeePass2Hotkeys";
                 case "GlobalHotkeys": return IsGerman ? "Globale Hotkeys..." : "Global Hotkeys...";
                 case "Hotkey": return IsGerman ? "Tastenkombination" : "Hotkey";
                 case "Expression": return IsGerman ? "Ausdruck" : "Expression";
